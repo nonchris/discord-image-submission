@@ -50,7 +50,8 @@ class MyBot(commands.Bot):
         # TODO: Register your extensions here
         initial_extensions = [
             '.cogs.misc',
-            '.cogs.help'
+            '.cogs.help',
+            'cogs.picture_processor'
         ]
 
         for extension in initial_extensions:
@@ -67,7 +68,7 @@ class MyBot(commands.Bot):
             # copy all commands to all guilds one after an other
             # this is inefficient, but a fast way to push new commands to all guilds
             await self.__sync_commands_to_guild(g)
-
+        print(self.guilds)
         logger.info(f"\n---\n"
                     f"Bot '{self.user.name}' has connected, active on {len(self.guilds)} guilds:\n{guild_string}"
                     f"---\n")
