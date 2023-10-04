@@ -40,12 +40,6 @@ class Singleton(type):
         return cls._instances[cls]
 
 class SingletonDatabase(metaclass=Singleton):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(SingletonDatabase, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
 
     def __init__(self):
         # team name to members
@@ -84,6 +78,8 @@ class SingletonDatabase(metaclass=Singleton):
         if validate:
             self.validate_team_record(team_record)
 
+        # TODO: create folder here and write team to file
+
         # okay, we can write the data
         self.all_registered_members.update(team_record.full_team)
         self.all_registered_team_names.add(team_record.team_name)
@@ -108,6 +104,7 @@ class SingletonDatabase(metaclass=Singleton):
         # we don't do file cleanup here.
 
         logger.info(f"Team '{team_record.team_name}' was deleted. Channel ID was: {team_record.dm_channel.id}")
+        # TODO: update file
 
     def remove_member(self, member: discord.Member, team_record=None):
         if team_record is None:
@@ -131,3 +128,4 @@ class SingletonDatabase(metaclass=Singleton):
         logger.info(f"Member {member.id} left team '{team_record.team_name}'")
 
         self.all_registered_members.remove(member)
+        # TODO: update file

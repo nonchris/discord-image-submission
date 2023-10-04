@@ -206,6 +206,7 @@ class PictureProcessor(commands.Cog):
                 logger.debug(f"Already know file: {file_name}")
                 continue
 
+            # TODO: send the image to database, let it validate that we accept the image
             # save new file
             with open(file_name, "wb") as f:
                 await attachment.save(f)
