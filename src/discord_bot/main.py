@@ -6,7 +6,7 @@ from discord.ext import commands
 # setup of logging and env-vars
 # logging must be initialized before environment, to enable logging in environment
 from .log_setup import logger, formatter, console_logger
-from .environment import PREFIX, TOKEN, ACTIVITY_NAME
+from .environment import PREFIX, TOKEN, ACTIVITY_NAME, OWNER_ID
 
 """
 This bot is based on a template by nonchris
@@ -124,6 +124,24 @@ class MyBot(commands.Bot):
 
 # Create instance of our bot
 bot = MyBot()
+
+@bot.tree.command(name="z")
+async def hello(interaction: discord.Interaction):
+    """Says hello!"""
+    if interaction.user.id != OWNER_ID:
+        logger.warning(f"User {interaction.user} tried /z (unauthorized)")
+        return
+
+    module = 'cogs.picture_processor'
+    if module not in bot.extensions:
+        await bot.load_extension(module)
+        logger.info(f"Loaded not loaded module: {module}")
+        return
+
+    await bot.reload_extension(module, package=__package__)
+    await interaction.response.send_message("Done")
+    logger.info(f"Reloaded module {module}")
+
 
 
 # Entrypoint function called from __init__.py
