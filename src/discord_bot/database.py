@@ -55,7 +55,7 @@ class TeamRecord:
             "other_members": self.to_id_list(self.other_members),
             "read_message_ids": list(self.read_message_ids),
             "dm_channel": self.dm_channel.id if self.dm_channel else None,
-            "old_members": self.to_id_list(self.old_member_ids),
+            "old_members": list(self.old_member_ids),
             "guild": self.founder.guild.id,  # needed to deserialize,
             "data_folder": self.data_folder
         }
