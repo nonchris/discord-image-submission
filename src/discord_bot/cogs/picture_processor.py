@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import os.path
 from typing import Literal, Optional
 
@@ -36,8 +37,9 @@ class PictureProcessor(commands.Cog):
         if not self.database.teams:
             asyncio.create_task(self.database.load_records_from_files())
 
-        # self.dm_walk_task = self.walk_dms.start()
+        self.dm_walk_task = self.walk_dms.start()
         self.save_records.start()
+        atexit.register(self.shutdown_procedure)
         logger.info("Loaded.")
 
 
@@ -281,12 +283,21 @@ class PictureProcessor(commands.Cog):
         logger.info(f"Waiting for scan of DMs to begin")
         await self.bot.wait_until_ready()
 
-
-    @tasks.loop(minutes=5)
-    async def save_records(self):
+    def __save_records(self):
+        logger.info("Start saving of all data to disk...")
         self.database.save_or_update_records()
+        logger.info("All data saved to disk")
 
+    # we do it all 10 seconds, but we sleep additional time in the method
+    # we don't need to write immediately after starting...
+    @tasks.loop(seconds=10)
+    async def save_records(self):
+        await asyncio.sleep(110)
+        self.__save_records()
 
+    def shutdown_procedure(self):
+        logger.warning(f"Shutdown was issued. saving data...")
+        self.__save_records()
 
 async def setup(bot):
     await bot.add_cog(PictureProcessor(bot))
