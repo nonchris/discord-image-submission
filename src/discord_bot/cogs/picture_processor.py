@@ -194,6 +194,8 @@ class PictureProcessor(commands.Cog):
 
         logger.debug(f"Processing message from '{m.author.id}' with {len(m.attachments)} attachments.")
 
+        was_picture_included = False
+
         # iterate attachments, save new images
         for attachment in m.attachments:
             if "image" not in attachment.content_type:
@@ -210,6 +212,11 @@ class PictureProcessor(commands.Cog):
             with open(file_name, "wb") as f:
                 await attachment.save(f)
             logger.info(f"Found new file - saving in: {file_name}")
+            was_picture_included = True
+
+        # acknowledge file
+        if was_picture_included:
+            await m.add_reaction("\u2705")
 
 
     @commands.Cog.listener()
@@ -241,6 +248,7 @@ class PictureProcessor(commands.Cog):
         # member is a founder, process the message
         await self.process_dm_message(message)
 
+    # TODO: use new DM storage system
     @tasks.loop(seconds=120)
     async def walk_dms(self):
         chat: discord.DMChannel
