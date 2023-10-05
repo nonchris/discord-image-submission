@@ -1,8 +1,9 @@
 import glob
 import json
+import shutil
 import os
 from dataclasses import dataclass, field
-from typing import Iterable, Callable, Any
+from typing import Iterable, Callable, Any, ClassVar
 
 import discord
 from discord.ext import commands
@@ -19,6 +20,7 @@ class TeamRecord:
     read_message_ids: set[message_idT] = field(default_factory=set, repr=False, compare=False)
     dm_channel: discord.DMChannel = None  # used to walk channels if we didn't get messages
     old_member_ids: set[int] = field(default_factory=set, repr=False, compare=False)
+    close_prefix: ClassVar = "closed_"
 
     def __post_init__(self):
         self.__data_folder: str = None
@@ -67,6 +69,17 @@ class TeamRecord:
     def write_to_disk(self, file_name="team_record.json"):
         # TODO: maybe logging if data is overwritten
         self.__write_to(f"{self.data_folder}/{file_name}")
+
+    def close(self):
+        path, target_folder = self.data_folder.rsplit("/", 1)
+        new_data_folder = f"{path}/{TeamRecord.close_prefix}{target_folder}"
+        i = 1
+        while os.path.exists(new_data_folder):
+            new_data_folder = f"{path}/{TeamRecord.close_prefix}{target_folder}_{i}"
+            i += 1
+
+        shutil.move(self.data_folder, new_data_folder)
+        self.data_folder = new_data_folder
 
     @staticmethod
     async def from_json(file: str, bot: commands.Bot):
@@ -192,6 +205,7 @@ class SingletonDatabase(metaclass=Singleton):
 
         logger.info(f"Team '{team_record.team_name}' was deleted. Channel ID was: {team_record.dm_channel.id}")
         # TODO: update file
+        team_record.close()
 
     def remove_member(self, member: discord.Member, team_record=None):
         if team_record is None:
@@ -206,7 +220,8 @@ class SingletonDatabase(metaclass=Singleton):
             logger.warning(
                 f"The team '{team_record.team_name}' is now empty, with 'None' as founder. Consider deleting it. "
                 f"Keeping a headless team might cause unexpected side-effects!")
-            team_record.founder = None
+            team_record.close()
+            del self.teams[member]  # remove from dict, nothing to see here
 
         # normal member
         else:
