@@ -29,8 +29,9 @@ class PictureProcessor(commands.Cog):
         self.bot: commands.Bot = bot
         self.storage: dict[discord.member, set[discord.Message]] = {}
         self.data_path = datat_path
-        self.database = SingletonDatabase()
+        self.database = SingletonDatabase(self.bot)
         # self.dm_walk_task = self.walk_dms.start()
+        self.save_records.start()
         logger.info("Loaded.")
 
 
@@ -239,6 +240,7 @@ class PictureProcessor(commands.Cog):
             )
             return
 
+        # member is a founder, process the message
         await self.process_dm_message(message)
 
     @tasks.loop(seconds=120)
@@ -271,6 +273,10 @@ class PictureProcessor(commands.Cog):
     # @walk_dms.after_loop
     # async def after_walk(self):
     #     self.walk_dms.stop()
+
+    @tasks.loop(minutes=5)
+    async def save_records(self):
+        self.database.save_or_update_records()
 
 
 
