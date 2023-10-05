@@ -1,8 +1,10 @@
+import datetime
 import glob
 import json
 import shutil
 import os
 from dataclasses import dataclass, field
+import datetime as dt
 from typing import Iterable, Callable, Any, ClassVar
 
 import discord
@@ -20,6 +22,8 @@ class TeamRecord:
     read_message_ids: set[message_idT] = field(default_factory=set, repr=False, compare=False)
     dm_channel: discord.DMChannel = None  # used to walk channels if we didn't get messages
     old_member_ids: set[int] = field(default_factory=set, repr=False, compare=False)
+    creation_time: dt.datetime = dt.datetime.now(tz=dt.timezone.utc)
+
     close_prefix: ClassVar = "closed_"
 
     def __post_init__(self):
@@ -59,7 +63,8 @@ class TeamRecord:
             "dm_channel": self.dm_channel.id if self.dm_channel else None,
             "old_members": list(self.old_member_ids),
             "guild": self.founder.guild.id,  # needed to deserialize,
-            "data_folder": self.data_folder
+            "data_folder": self.data_folder,
+            "creation_time": self.creation_time.timestamp()
         }
 
     def __write_to(self, path: str):
@@ -97,6 +102,7 @@ class TeamRecord:
             read_message_ids=set(data["read_message_ids"]),
             dm_channel=dm_channel,
             old_member_ids=set(data["old_members"]),
+            creation_time=dt.datetime.fromtimestamp(data["creation_time"], tz=dt.timezone.utc)
         )
         t.data_folder = data["data_folder"]
 

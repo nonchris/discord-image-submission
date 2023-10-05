@@ -267,6 +267,10 @@ class PictureProcessor(commands.Cog):
 
             async for message in team_record.dm_channel.history(limit=None):
 
+                if message.created_at < team_record.creation_time:
+                    logger.info(f"Breaking on: {message.id}, {message.created_at}")
+                    break
+
                 await self.process_dm_message(message)
 
     # make sure we're online before starting
