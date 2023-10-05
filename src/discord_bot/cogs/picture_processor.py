@@ -121,6 +121,7 @@ class PictureProcessor(commands.Cog):
 
         # set private channel to record
         t.dm_channel = private_message.channel
+        t.data_folder = f"{self.data_path}/{private_message.channel.id}"
 
         # try to add it and validate the data again - maybe something changed in the meantime while doing a request
         # -> race-conditions
@@ -188,13 +189,9 @@ class PictureProcessor(commands.Cog):
         if len(m.attachments) == 0:
             return
 
-        logger.debug(f"Processing message from '{m.author.id}' with {len(m.attachments)} attachments.")
+        team_record = self.database.locate_member(m.author)
 
-        # make sure that we've got a folder for that chat
-        dir_path = f"{self.data_path}/{m.channel.id}"
-        if not os.path.isdir(dir_path):
-            logger.info(f"No directory for that chat exists - creating one: {dir_path}")
-            os.mkdir(dir_path)
+        logger.debug(f"Processing message from '{m.author.id}' with {len(m.attachments)} attachments.")
 
         # iterate attachments, save new images
         for attachment in m.attachments:
@@ -202,7 +199,7 @@ class PictureProcessor(commands.Cog):
                 continue
 
             # check if we know that file
-            file_name = f"{dir_path}/{m.id}_{attachment.id}.png"
+            file_name = f"{team_record.data_folder}/{m.id}_{attachment.id}.png"
             if os.path.isfile(file_name):
                 logger.debug(f"Already know file: {file_name}")
                 continue

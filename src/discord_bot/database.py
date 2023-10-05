@@ -15,14 +15,14 @@ message_idT = int
 class TeamRecord:
     team_name: str
     founder: discord.Member
-    data_folder: str
     other_members: set[discord.Member]
+    data_folder: str = ""
     read_message_ids: set[message_idT] = field(default_factory=set, repr=False, compare=False)
     dm_channel: discord.DMChannel = None  # used to walk channels if we didn't get messages
     old_member_ids: set[int] = field(default_factory=set, repr=False, compare=False)
 
     def __post_init__(self):
-        os.makedirs(self.data_folder)
+        os.makedirs(self.data_folder, exist_ok=True)
 
     @property
     def full_team(self) -> set[discord.Member]:
@@ -119,6 +119,9 @@ class SingletonDatabase(metaclass=Singleton):
     def locate_member(self, m: discord.Member):
         if m not in self.all_registered_members:
             return None
+
+        if m in self.teams.keys():
+            return self.teams[m]
 
         for tr in self.teams.values():
             if m in tr.full_team:
