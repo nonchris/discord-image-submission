@@ -229,15 +229,12 @@ class PictureProcessor(commands.Cog):
     async def on_message(self, message: discord.Message):
         member = message.author
         logger.debug(message.content)
-        print(f"Messsage: {message}")
 
         if message.author == self.bot.user:
-            print("Booot111")
             return
 
         # we only do DMs here
         if type(message.channel) is not discord.DMChannel:
-            print("Not DM")
             return
 
         # member is not a team founder - let's see what we respond
@@ -270,10 +267,7 @@ class PictureProcessor(commands.Cog):
 
             async for message in team_record.dm_channel.history(limit=None):
 
-                print(message)
                 await self.process_dm_message(message)
-
-
 
     # make sure we're online before starting
     @walk_dms.before_loop
