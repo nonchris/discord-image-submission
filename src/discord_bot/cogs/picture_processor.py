@@ -1,3 +1,4 @@
+import asyncio
 import os.path
 from typing import Literal, Optional
 
@@ -30,6 +31,11 @@ class PictureProcessor(commands.Cog):
         self.storage: dict[discord.member, set[discord.Message]] = {}
         self.data_path = datat_path
         self.database = SingletonDatabase(self.bot)
+        # TODO: race condition when team isn't loaded but a team is created in that time (actually not a irl problem)
+        #  solution: check if path exists and then load that team and raise error based on it
+        if not self.database.teams:
+            asyncio.create_task(self.database.load_records_from_files())
+
         # self.dm_walk_task = self.walk_dms.start()
         self.save_records.start()
         logger.info("Loaded.")

@@ -69,13 +69,13 @@ class TeamRecord:
         self.__write_to(f"{self.data_folder}/{file_name}")
 
     @staticmethod
-    def from_json(file: str, bot: commands.Bot):
+    async def from_json(file: str, bot: commands.Bot):
         with open(file, "r") as f:
             data = json.load(f)
 
         guild = bot.get_guild(data["guild"])
         # TODO why doesnt this seem to give a DMChannel?
-        dm_channel: discord.DMChannel = bot.get_channel(data["dm_channel"]) if data["dm_channel"] else None
+        dm_channel: discord.DMChannel = await bot.fetch_channel(data["dm_channel"]) if data["dm_channel"] else None
 
         t = TeamRecord(
             team_name=data["team_name"],
@@ -117,12 +117,14 @@ class SingletonDatabase(metaclass=Singleton):
         self.all_registered_members: set[discord.Member] = set()
         self.all_registered_team_names: set[str] = set()
 
-        if restore_from_files:
-            self.load_records_from_files()
-
-    def load_records_from_files(self, file_names="team_record.json"):
+    async def load_records_from_files(self, file_names="team_record.json"):
         for file_path in glob.glob(f"data/**/{file_names}", recursive=True):
-            team_record = TeamRecord.from_json(file_path, self.bot)
+
+            # ignore closed teams
+            if TeamRecord.close_prefix in file_path:
+                continue
+
+            team_record = await TeamRecord.from_json(file_path, self.bot)
 
             self.teams[team_record.founder] = team_record
             self.all_registered_members.update(team_record.full_team)
