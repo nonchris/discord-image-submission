@@ -77,7 +77,7 @@ class PictureProcessor(commands.Cog):
         def get_team_creation_error_embed(e: Exception):
             return ut.make_embed(
                 name='Failed to create team',
-                value=f'Reason: {e}',
+                value=f"Reason: {e}, you can leave a team using `/leave`. You're NOT able to join an existing team.",
                 color=ut.red)
 
         # let me make up for the hell above by doing even more horrible things, but it's for the better. trust me.
