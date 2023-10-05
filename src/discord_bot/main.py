@@ -68,7 +68,7 @@ class MyBot(commands.Bot):
             # copy all commands to all guilds one after an other
             # this is inefficient, but a fast way to push new commands to all guilds
             await self.__sync_commands_to_guild(g)
-        print(self.guilds)
+
         logger.info(f"\n---\n"
                     f"Bot '{self.user.name}' has connected, active on {len(self.guilds)} guilds:\n{guild_string}"
                     f"---\n")
@@ -84,6 +84,10 @@ class MyBot(commands.Bot):
         logger.info(f"Bot joined guild: '{guild.name}'")
         # try to push slash commands to new server
         await self.__sync_commands_to_guild(guild)
+
+    async def resync_commands(self):
+        for g in self.guilds:
+            await self.__sync_commands_to_guild(g)
 
     async def __sync_commands_to_guild(self, guild: discord.Guild):
         """!
@@ -126,8 +130,8 @@ class MyBot(commands.Bot):
 bot = MyBot()
 
 @bot.tree.command(name="z")
-async def hello(interaction: discord.Interaction):
-    """Says hello!"""
+async def hello(interaction: discord.Interaction, resync: bool = False):
+    """ Admin only. """
     if interaction.user.id != OWNER_ID:
         logger.warning(f"User {interaction.user} tried /z (unauthorized)")
         return
@@ -136,12 +140,14 @@ async def hello(interaction: discord.Interaction):
     if module not in bot.extensions:
         await bot.load_extension(module)
         logger.info(f"Loaded not loaded module: {module}")
-        return
 
-    await bot.reload_extension(module, package=__package__)
-    await interaction.response.send_message("Done")
-    logger.info(f"Reloaded module {module}")
+    else:
+        await bot.reload_extension(module, package=__package__)
+        await interaction.response.send_message("Done")
+        logger.info(f"Reloaded module {module}")
 
+    if resync:
+        await bot.resync_commands()
 
 
 # Entrypoint function called from __init__.py
