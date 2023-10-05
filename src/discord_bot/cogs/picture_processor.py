@@ -146,6 +146,18 @@ class PictureProcessor(commands.Cog):
                 value=f'Go to your DMs and start submitting images for you team!'),
         )
 
+    @app_commands.command(name="which_team", description="Get the information in which team you're in.")
+    async def which_team(self, interaction: discord.Interaction):
+        team_record = self.database.locate_member(interaction.user)
+        if team_record is None:
+            await interaction.response.send_message(f"You're currently not part of a team.")
+            return
+
+
+        await interaction.response.send_message(
+            f"You're part of team '{team_record.team_name}', created by {team_record.founder.display_name}"
+        )
+
     @app_commands.command(name=unregister_command, description="Leave your team. You CAN'T JOIN an existing team!")
     async def leave(self, interaction: discord.Interaction):
         member = interaction.user
