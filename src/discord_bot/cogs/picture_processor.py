@@ -189,6 +189,7 @@ class PictureProcessor(commands.Cog):
         if len(m.attachments) == 0:
             return
 
+        # get channel from team record to pin it on the member
         team_record = self.database.locate_member(m.author)
 
         logger.debug(f"Processing message from '{m.author.id}' with {len(m.attachments)} attachments.")

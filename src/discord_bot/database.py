@@ -16,13 +16,21 @@ class TeamRecord:
     team_name: str
     founder: discord.Member
     other_members: set[discord.Member]
-    data_folder: str = ""
     read_message_ids: set[message_idT] = field(default_factory=set, repr=False, compare=False)
     dm_channel: discord.DMChannel = None  # used to walk channels if we didn't get messages
     old_member_ids: set[int] = field(default_factory=set, repr=False, compare=False)
 
     def __post_init__(self):
-        os.makedirs(self.data_folder, exist_ok=True)
+        self.__data_folder: str = None
+
+    @property
+    def data_folder(self):
+        return self.__data_folder
+
+    @data_folder.setter
+    def data_folder(self, path: str):
+        os.makedirs(path, exist_ok=True)
+        self.__data_folder = path
 
     @property
     def full_team(self) -> set[discord.Member]:
@@ -46,18 +54,19 @@ class TeamRecord:
             "founder": self.founder.id,
             "other_members": self.to_id_list(self.other_members),
             "read_message_ids": list(self.read_message_ids),
-            "dm_channel": self.dm_channel.id,
+            "dm_channel": self.dm_channel.id if self.dm_channel else None,
             "old_members": self.to_id_list(self.old_member_ids),
             "guild": self.founder.guild.id,  # needed to deserialize,
             "data_folder": self.data_folder
         }
 
-    def write_to(self, path: str):
+    def __write_to(self, path: str):
         with open(path, "w") as f:
-            json.dump(self.to_json(), f)
+            json.dump(self.to_json(), f, indent=4)
 
     def write_to_disk(self, file_name="team_record.json"):
-        self.write_to(f"{self.data_folder}/{file_name}")
+        # TODO: maybe logging if data is overwritten
+        self.__write_to(f"{self.data_folder}/{file_name}")
 
     @staticmethod
     def from_json(file: str, bot: commands.Bot):
@@ -66,17 +75,20 @@ class TeamRecord:
 
         guild = bot.get_guild(data["guild"])
         # TODO why doesnt this seem to give a DMChannel?
-        dm_channel: discord.DMChannel = bot.get_channel(data["dm_channel"])
+        dm_channel: discord.DMChannel = bot.get_channel(data["dm_channel"]) if data["dm_channel"] else None
 
-        return TeamRecord(
+        t = TeamRecord(
             team_name=data["team_name"],
-            data_folder=data["data_folder"],
             founder=guild.get_member(data["founder"]),
             other_members=TeamRecord.to_obj_set(data["other_members"], guild.get_member),
             read_message_ids=set(data["read_message_ids"]),
             dm_channel=dm_channel,
             old_member_ids=set(data["old_members"]),
         )
+        t.data_folder = data["data_folder"]
+
+        return t
+
 
 
 # okay. now why that?
@@ -203,7 +215,7 @@ class SingletonDatabase(metaclass=Singleton):
 
         team_record.old_member_ids.add(member.id)
         self.all_registered_members.remove(member)
-        # TODO: update file
+        team_record.write_to_disk()
 
     def save_or_update_records(self, file_name="team_record.json"):
         for record in self.teams.values():
