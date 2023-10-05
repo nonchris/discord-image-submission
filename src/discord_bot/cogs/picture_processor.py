@@ -252,7 +252,7 @@ class PictureProcessor(commands.Cog):
         await self.process_dm_message(message)
 
     # TODO: use new DM storage system
-    @tasks.loop(seconds=120)
+    @tasks.loop(count=1)
     async def walk_dms(self):
         chat: discord.DMChannel
 
@@ -273,16 +273,14 @@ class PictureProcessor(commands.Cog):
 
                 await self.process_dm_message(message)
 
+        logger.info(f"All chats walked successful.")
+
     # make sure we're online before starting
     @walk_dms.before_loop
     async def before_walk(self):
         logger.info(f"Waiting for scan of DMs to begin")
         await self.bot.wait_until_ready()
 
-    # we only want the task to run once
-    # @walk_dms.after_loop
-    # async def after_walk(self):
-    #     self.walk_dms.stop()
 
     @tasks.loop(minutes=5)
     async def save_records(self):
