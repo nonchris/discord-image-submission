@@ -85,7 +85,7 @@ class PictureProcessor(commands.Cog):
         def get_team_creation_error_embed(e: Exception):
             return ut.make_embed(
                 name='Failed to create team',
-                value=f"Reason: {e}, you can leave a team using `/leave`. You're NOT able to join an existing team.",
+                value=f"Reason: {e}, you can leave a team using `/{unregister_command}`. You're NOT able to join an existing team.",
                 color=ut.red)
 
         # let me make up for the hell above by doing even more horrible things, but it's for the better. trust me.
@@ -102,7 +102,7 @@ class PictureProcessor(commands.Cog):
             t = TeamRecord(team_name=team_name, founder=interaction.user, other_members=other_members_set)
             self.database.validate_team_record(t)
         except ValueError as e:
-            await interaction.response.send_message(embed=get_team_creation_error_embed(e))
+            await interaction.response.send_message(embed=get_team_creation_error_embed(e), ephemeral=True)
             return
 
         # try to contact the member via DM
@@ -124,6 +124,7 @@ class PictureProcessor(commands.Cog):
                           f"**No team** was created!",
                     color=ut.red
                 ),
+                ephemeral=True
             )
             return
 
@@ -136,26 +137,27 @@ class PictureProcessor(commands.Cog):
         try:
             self.database.add_record(t, validate=True)
         except ValueError as e:
-            await interaction.response.send_message(embed=get_team_creation_error_embed(e))
+            await interaction.response.send_message(embed=get_team_creation_error_embed(e), ephemeral=True)
             return
 
         # done!
         await interaction.response.send_message(
             embed=ut.make_embed(
                 name='Your team is registered!',
-                value=f'Go to your DMs and start submitting images for you team!'),
+                value=f'Go to your DMs and start submitting images for you team!')
         )
 
     @app_commands.command(name="which_team", description="Get the information in which team you're in.")
     async def which_team(self, interaction: discord.Interaction):
         team_record = self.database.locate_member(interaction.user)
         if team_record is None:
-            await interaction.response.send_message(f"You're currently not part of a team.")
+            await interaction.response.send_message(f"You're currently not part of a team.", ephemeral=True)
             return
 
 
         await interaction.response.send_message(
-            f"You're part of team '{team_record.team_name}', created by {team_record.founder.display_name}"
+            f"You're part of team '{team_record.team_name}', created by {team_record.founder.display_name}",
+            ephemeral=True
         )
 
     @app_commands.command(name=unregister_command, description="Leave your team. You CAN'T JOIN an existing team!")
@@ -163,7 +165,7 @@ class PictureProcessor(commands.Cog):
         member = interaction.user
         team_record = self.database.locate_member(member)
         if team_record is None:
-            await interaction.response.send_message("You're not part of a team you could leave.")
+            await interaction.response.send_message("You're not part of a team you could leave.", ephemeral=True)
             return
 
         # founder can't leave as long as other members are part of it
@@ -174,7 +176,9 @@ class PictureProcessor(commands.Cog):
                                           "If you want to leave, every member must leave beforehand.\n"
                                           "All progress will be lost when you leave.\n"
                                           "It is not possible to (re-)join an existing team!",
-                                    color=ut.red)
+                                    color=ut.red),
+                ephemeral=True
+
             )
             return
 
@@ -195,7 +199,8 @@ class PictureProcessor(commands.Cog):
                 title="You left.",
                 value="You can now found a new team, joining an existing team is NOT possible.",
                 color=ut.blue_light
-            )
+            ),
+            ephemeral=True
         )
 
 
