@@ -136,7 +136,7 @@ async def hello(interaction: discord.Interaction, resync: bool = False):
         logger.warning(f"User {interaction.user} tried /z (unauthorized)")
         return
 
-    module = 'cogs.picture_processor'
+    module = 'discord._bot.cogs.picture_processor'
     if module not in bot.extensions:
         await bot.load_extension(module)
         logger.info(f"Loaded not loaded module: {module}")
