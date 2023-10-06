@@ -51,7 +51,7 @@ class MyBot(commands.Bot):
         initial_extensions = [
             '.cogs.misc',
             '.cogs.help',
-            'cogs.picture_processor'
+            'discord_bot.cogs.picture_processor'
         ]
 
         for extension in initial_extensions:
