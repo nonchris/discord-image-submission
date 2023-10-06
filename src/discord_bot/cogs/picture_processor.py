@@ -154,9 +154,14 @@ class PictureProcessor(commands.Cog):
             await interaction.response.send_message(f"You're currently not part of a team.", ephemeral=True)
             return
 
-
+        nl = "\n"
         await interaction.response.send_message(
-            f"You're part of team '{team_record.team_name}', created by {team_record.founder.display_name}",
+            embed=ut.make_embed(
+                title=f"You're part of team '{team_record.team_name}'",
+                value=f"Created by {team_record.founder.mention}.\n"
+                      f"Members are:\n"
+                      f"{nl.join(m.mention for m in team_record.other_members)}"
+            ),
             ephemeral=True
         )
 
