@@ -1,5 +1,6 @@
 # discord-image submission
-A robust bot for submitting images as a team via discord..    
+A robust bot for submitting images as a team via discord.  
+All based on slash commands and the private chat.  
 Useful for image hunts where people are tasked to find things and submit images from the findings.  
 The bot supports live reload of the submission module without restarting.  
 All stored data is persistent and will be reloaded after restart.  
