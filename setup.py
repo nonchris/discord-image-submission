@@ -17,21 +17,21 @@ setup(
     # TODO: Adjust your project information here
     name='discord_bot',
     version=version,
-    description='A discord bot template',
+    description='Discord Image Submission',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/nonchris/discord-bot',
+    url='https://github.com/nonchris/discord-image-submission',
     author='nonchris',
     author_email='info@nonchris.eu',
 
     project_urls={
-        'Bug Reports': 'https://github.com/nonchris/discord-bot/issues',
-        'Source': 'https://github.com/https://github.com/nonchris/discord-bot',
+        'Bug Reports': 'https://github.com/nonchris/discord-image-submission/issues',
+        'Source': 'https://github.com/nonchris/discord-image-submission',
     },
 
     keywords='discord-bot',
 
-    python_requires='>=3.8, <4',
+    python_requires='>=3.10, <4',
 
     install_requires=dependencies,
 
